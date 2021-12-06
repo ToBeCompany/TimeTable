@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
 
-
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC'
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.ktor:ktor-auth:$ktor_version"
     implementation "io.ktor:ktor-websockets:$ktor_version"
