@@ -23,32 +23,8 @@ install(ContentNegotiation) {
 }
         configureRouting()
         configureSerialization()
-        websockConfigure()
+        configureSockets()
     }.start(wait = true)
 }
 
-fun Application.websockConfigure(){
-    install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(15)
-        timeout = Duration.ofSeconds(15)
-        maxFrameSize = Long.MAX_VALUE
-        masking = false
-    }
-    routing {
-        webSocket("/echo") {
-            send("Please enter your name")
-            for (frame in incoming) {
-                when (frame) {
-                    is Frame.Text -> {
-                        val receivedText = frame.readText()
-                        if (receivedText.equals("bye", ignoreCase = true)) {
-                            close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
-                        } else {
-                            send(Frame.Text("Hi, $receivedText!"))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+
