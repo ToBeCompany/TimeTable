@@ -7,12 +7,13 @@ import io.ktor.application.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
+import java.time.Duration
 
 fun main() {
     val port = Integer.parseInt(System.getenv("PORT"))
 
     embeddedServer(Netty, port = port) {
-        install(WebSockets)
+
         configureRouting()
         configureSerialization()
         websockConfigure()
@@ -20,6 +21,12 @@ fun main() {
 }
 
 fun Application.websockConfigure(){
+    install(WebSockets) {
+        pingPeriod = Duration.ofSeconds(15)
+        timeout = Duration.ofSeconds(15)
+        maxFrameSize = Long.MAX_VALUE
+        masking = false
+    }
     routing {
         webSocket("/echo") {
             send("Please enter your name")
