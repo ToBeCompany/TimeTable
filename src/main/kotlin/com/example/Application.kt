@@ -12,7 +12,7 @@ import io.ktor.websocket.*
 import java.time.Duration
 
 fun main() {
-    val port = 8080//Integer.parseInt(System.getenv("PORT"))
+    val port = Integer.parseInt(System.getenv("PORT"))
 
     embeddedServer(Netty, port = port) {
 install(ContentNegotiation) {
