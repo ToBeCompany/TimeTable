@@ -10,30 +10,25 @@ import io.ktor.response.*
 import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.sessions.*
+
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import java.nio.channels.Channels
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.LinkedHashSet
 
 fun Application.configureSockets() {
-    var idperson = 0
-    var idpassenger = 0
-    var idVodila = 0
-    var coordinates = 0
 
-
-//    var collection_Names = mutableMapOf(1 to "viktor",2 to "vo",3 to "serega")
-    var collection_Names = mutableMapOf("vi" to 11233412,"se" to 23878123,"vova" to 43231432)
-    var list_of_names = listOf<String>("vi","se")
-
-
-    var listsOflists = mutableMapOf<Int,MutableList<Int>>(
-        1 to mutableListOf(),
-        2 to mutableListOf(),
-        3 to mutableListOf()
-    )
+    //var listsOflists = mutableMapOf<Int, MutableList<DefaultWebSocketSession>>()
+    var listsOfChannels = mutableMapOf<Int, ReceiveChannel<Frame>>()
 
 
     install(WebSockets) {
@@ -43,98 +38,34 @@ fun Application.configureSockets() {
         masking = false
     }
     routing {
+
         webSocket("/passenger/{idpassenger}") {
-            send("укажите маршрут")
+            val idpassenger = call.parameters["idpassenger"]?.toInt() ?: 0
+//            listsOflists[idpassenger]?.add(this)
+         var t =
+            launch {
+                 listsOfChannels[idpassenger]?.let {
+                     for (i in it){
+
+                         send(i)
+                     }
+                 }
+            }.join()
+            println("listssss ::;$listsOfChannels")
+            println("final")
+        }
+
+        webSocket("/driver/{idDriver}") {
+            val idDriver= call.parameters["idDriver"]?.toInt() ?: 0
+            listsOfChannels.put(idDriver, incoming)
+        println("incomig::$incoming")
             for (frame in incoming) {
-                when (frame) {
-                    is Frame.Text -> {
-                        val receivedText = frame.readText()
-                        idpassenger = receivedText.toInt()
+                println("frame::$frame")
+                println("incoming22::$incoming")
 
-                        listsOflists[receivedText.toInt()]?.add(receivedText.toInt())
-                        println(listsOflists[receivedText.toInt()])
-//                        for(i in collection_Names.keys) {
-//                            if (i == receivedText){
-//                                idperson = collection_Names[i]!!
-//
-//                                namePerson = receivedText
-                        GlobalScope.launch {
-                        while(true){
-                            delay(3000)
-                        send("coordinates ${coordinates}")}
-                        }
-//                                send(Frame.Text("Ваше имя есть в списке, $receivedText!"))
-//                            }
-//
-//                        }
-
-
-                    }
-                }
             }
-
-
-                    }
-
-
-
-
-    val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
-        webSocket("/voditel/{idVodila}") {
-            println("Водитель в сети")
-
-            val thisConnection = Connection(this)
-            connections += thisConnection
-
-
-//            for(i in list_of_names){
-//                if(i == namePerson){
-//                    valueOfId += collection_Names[i].toString()!!
-//                    println(valueOfId)
-//                }
-//
-//            }
-
-            try {
-                send("введите по какому маршруту в поедите")
-                for (frame in incoming) {
-                    frame as? Frame.Text ?: continue
-                    val receivedText = frame.readText()
-                    idVodila = receivedText.toInt()
-
-                  listsOflists[idVodila]?.forEach {
-                      GlobalScope.launch {
-                          while(true){
-                              delay(2000)
-                            coordinates++
-                          }
-                      }
-                  }
-
-
-                }
-
-            } finally {
-                println("Removing $thisConnection!")
-                connections -= thisConnection
-
-
-                idperson = 0
-            }
+            println("listchannel::$listsOfChannels")
+           // println("listoflist::$listsOflists")
         }
-
-
-        }
-
-
-
-}
-
-class Connection(val session: DefaultWebSocketSession) {
-    companion object {
-        var lastId = AtomicInteger(0)
-
     }
-
-    val name = "user${lastId.getAndIncrement()}"
 }
