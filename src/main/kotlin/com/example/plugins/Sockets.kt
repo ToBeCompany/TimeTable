@@ -1,35 +1,22 @@
 package com.example.plugins
 
-import com.example.voditel
-import io.ktor.http.cio.websocket.*
-import io.ktor.websocket.*
-import java.time.*
 import io.ktor.application.*
-import io.ktor.network.sockets.*
-import io.ktor.response.*
-import io.ktor.request.*
+import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
-import io.ktor.sessions.*
-
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consume
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
+import io.ktor.websocket.*
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
-import java.nio.channels.Channels
+import java.time.Duration
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.LinkedHashSet
+
 
 fun Application.configureSockets() {
 
-    //var listsOflists = mutableMapOf<Int, MutableList<DefaultWebSocketSession>>()
-    var listsOfChannels = mutableMapOf<Int, ReceiveChannel<Frame>>()
 
+    var listsOfChannels = Collections.synchronizedMap<Int, BroadcastChannel<Frame>>(mutableMapOf())
+    val stateflow: MutableStateFlow<String> = MutableStateFlow("")
 
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
@@ -41,31 +28,28 @@ fun Application.configureSockets() {
 
         webSocket("/passenger/{idpassenger}") {
             val idpassenger = call.parameters["idpassenger"]?.toInt() ?: 0
-//            listsOflists[idpassenger]?.add(this)
-         var t =
+
             launch {
-                 listsOfChannels[idpassenger]?.let {
-                     for (i in it){
+                listsOfChannels[idpassenger]?.let {
+                    it.consumeEach { frame->
+                        send(frame)
+                    }
+                }
 
-                         send(i)
-                     }
-                 }
             }.join()
-            println("listssss ::;$listsOfChannels")
-            println("final")
         }
-
         webSocket("/driver/{idDriver}") {
-            val idDriver= call.parameters["idDriver"]?.toInt() ?: 0
-            listsOfChannels.put(idDriver, incoming)
-        println("incomig::$incoming")
-            for (frame in incoming) {
-                println("frame::$frame")
-                println("incoming22::$incoming")
-
+            val idDriver = call.parameters["idDriver"]?.toInt() ?: 0
+            val broadcastChannel = Channel<Frame>()
+            listsOfChannels.put(idDriver, broadcastChannel.broadcast())
+            for (frame in incoming){
+                launch {
+                    broadcastChannel.send(frame.copy())
+                    println(listsOfChannels[idDriver])
+                }
             }
-            println("listchannel::$listsOfChannels")
-           // println("listoflist::$listsOflists")
+
         }
     }
 }
+
