@@ -4,9 +4,11 @@ import io.ktor.application.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.util.*
@@ -29,10 +31,10 @@ fun Application.configureSockets() {
         webSocket("/passenger/{idpassenger}") {
             val idpassenger = call.parameters["idpassenger"]?.toInt() ?: 0
 
-            launch {
+           launch{
                 listsOfChannels[idpassenger]?.let {
                     it.consumeEach { frame->
-                        send(frame)
+                        send(frame.copy())
                     }
                 }
 
