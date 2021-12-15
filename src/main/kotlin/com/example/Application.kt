@@ -18,18 +18,13 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 
 fun main() {
-    val port = 8080//Integer.parseInt(System.getenv("PORT"))
+    val port = Integer.parseInt(System.getenv("PORT"))
     Database.connect(
         "jdbc:postgresql://ec2-54-204-128-96.compute-1.amazonaws.com:5432/d43qcb6atqt206?sslmode=require",
         driver = "org.postgresql.Driver",
         user = "zpikpxknmoscgo",
         password ="7d2459c6a2a75d029f3ecaf7b4564bbf0114f96083a4e504886771cb212c344f"
     )
-    transaction {
-        Users.selectAll().map {
-            (UserM(it[Users.id], it[Users.name]))
-        }
-    }
 
     embeddedServer(Netty, port = port) {
 install(ContentNegotiation) {
