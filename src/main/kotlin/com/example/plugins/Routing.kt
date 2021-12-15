@@ -20,13 +20,17 @@ data class UserM(val id : Int, val name : String)
 fun Application.configureRouting() {
 
     routing {
-        get("/") {
+        get("/{id}") {
+            var ids = call.parameters["id"]?.toInt() ?: 0
+
             val a = transaction {
                 Users.selectAll().map {
                     (UserM(it[Users.id], it[Users.name]))
                 }
             }
-            call.respondText(Json.encodeToString<List<UserM>>(a))
+            call.respondText(Json.encodeToString<UserM>(a[ids]))
         }
-    }
+
+        }
+
 }
