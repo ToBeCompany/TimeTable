@@ -12,12 +12,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.util.*
-
+var listsOfChannels = Collections.synchronizedMap<Int, BroadcastChannel<Frame>>(mutableMapOf())
 
 fun Application.configureSockets() {
 
 
-    var listsOfChannels = Collections.synchronizedMap<Int, BroadcastChannel<Frame>>(mutableMapOf())
+
     val stateflow: MutableStateFlow<String> = MutableStateFlow("")
 
     install(WebSockets) {
