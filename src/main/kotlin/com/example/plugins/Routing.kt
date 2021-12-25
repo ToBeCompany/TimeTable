@@ -48,11 +48,18 @@ fun Application.configureRouting() {
 
             val a = transaction {
 
-               val m =  Users.selectAll().find{
-                    it[Users.idnum] == sigin_id}
+//               val m =  Users.selectAll().find{
+//                    it[Users.idnum] == sigin_id}
+//
+//                m?.get(Users.idnum)?.let { it1 -> UserM(it1,m[Users.name],m[Users.user_type]) }
 
-                m?.get(Users.idnum)?.let { it1 -> UserM(it1,m[Users.name],m[Users.user_type]) }
-            }
+                val t = Users.select(){
+                    Users.idnum eq sigin_id
+                }.find { it[Users.idnum] == sigin_id}
+
+            t?.get(Users.idnum)?.let{it2 -> UserM(it2,t[Users.name],t[Users.user_type])}
+          }
+
 
             call.respondText(Json.encodeToString<UserM?>(a))
                 }
@@ -77,10 +84,10 @@ fun Application.configureRouting() {
 
                 }
             }
-            for (i in result) {
 
-                call.respondText(Json.encodeToString<List<MarshrutM>>(listOf(a[i])))
-            }
+
+                call.respondText(Json.encodeToString<List<MarshrutM>>(a))
+
 
         }
 
