@@ -18,13 +18,18 @@ object marshruts :Table("marsruts"){
     val idost = integer("idost")
     val idostplus = integer("idostplus")
 }
-
+object marshNames :Table("marsrutnames"){
+    val id = integer("id")
+    val name = varchar("namemarsrut",30)
+}
 object Users : Table("directory") {
 
     val idnum = integer("idNum") // Column<String>
     val name = varchar("name", 20) // Column<String>
     val user_type = varchar("user_Type",6)
 }
+@Serializable
+data class  MarshNamesM(val id: Int = 0,val name:String = "")
 @Serializable
 data class UserM(val id : Int = 0, val name : String = "", val User_type:String = "")
 @Serializable
@@ -49,10 +54,6 @@ fun Application.configureRouting() {
 
             val a = transaction {
 
-//               val m =  Users.selectAll().find{
-//                    it[Users.idnum] == sigin_id}
-//
-//                m?.get(Users.idnum)?.let { it1 -> UserM(it1,m[Users.name],m[Users.user_type]) }
 
                 val t = Users.select(){
                     Users.idnum eq sigin_id
@@ -64,13 +65,15 @@ fun Application.configureRouting() {
 
             call.respondText(Json.encodeToString<UserM?>(a), ContentType.Application.Json)
                 }
-//                val answer = Users.select(Op.build {
-//                    Users.idnum eq sigin_id
-//                }).execute(this)
-//                answer
-//                (UserM(it[, it[Users.name],it[Users.user_type])
 
-
+get ("/namesMarsh"){
+val a = transaction {
+    marshNames.selectAll().map{
+        (MarshNamesM(it[marshNames.id],it[marshNames.name]))
+    }
+}
+    call.respondText(Json.encodeToString<List<MarshNamesM>>(a), ContentType.Application.Json)
+}
 
 
 
@@ -79,12 +82,6 @@ fun Application.configureRouting() {
 
         get("/marsh") {
             val result = listsOfChannels.keys.toList()
-//            val a = transaction {
-//                val m = marshruts.selectAll().map {
-//                   (MarshrutM(it[marshruts.id], it[marshruts.idm], it[marshruts.idost], it[marshruts.idostplus]))
-//                }
-//
-//            }
 
 
                 call.respondText(Json.encodeToString<List<Int>>(result), ContentType.Application.Json)
