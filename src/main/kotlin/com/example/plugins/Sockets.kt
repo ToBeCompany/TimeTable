@@ -47,8 +47,10 @@ fun Application.configureSockets() {
             for (frame in incoming){
                 launch {
                     broadcastChannel.send(frame.copy())
-                    println(listsOfChannels[idDriver])
                 }
+
+
+
             }
 
         }

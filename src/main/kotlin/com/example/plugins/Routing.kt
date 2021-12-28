@@ -1,6 +1,7 @@
 package com.example.plugins
 
 import io.ktor.application.*
+import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.utils.io.*
@@ -40,7 +41,7 @@ fun Application.configureRouting() {
 
                 }
             }
-            call.respondText(Json.encodeToString<UserM>(a[ids]))
+            call.respondText(Json.encodeToString<UserM>(a[ids]), ContentType.Application.Json)
         }
 
         get("/sign/{id_sign}") {
@@ -61,7 +62,7 @@ fun Application.configureRouting() {
           }
 
 
-            call.respondText(Json.encodeToString<UserM?>(a))
+            call.respondText(Json.encodeToString<UserM?>(a), ContentType.Application.Json)
                 }
 //                val answer = Users.select(Op.build {
 //                    Users.idnum eq sigin_id
@@ -78,15 +79,15 @@ fun Application.configureRouting() {
 
         get("/marsh") {
             val result = listsOfChannels.keys.toList()
-            val a = transaction {
-                marshruts.selectAll().map {
-                    (MarshrutM(it[marshruts.id], it[marshruts.idm], it[marshruts.idost], it[marshruts.idostplus]))
+//            val a = transaction {
+//                val m = marshruts.selectAll().map {
+//                   (MarshrutM(it[marshruts.id], it[marshruts.idm], it[marshruts.idost], it[marshruts.idostplus]))
+//                }
+//
+//            }
 
-                }
-            }
 
-
-                call.respondText(Json.encodeToString<List<MarshrutM>>(a))
+                call.respondText(Json.encodeToString<List<Int>>(result), ContentType.Application.Json)
 
 
         }
