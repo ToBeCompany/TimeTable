@@ -39,12 +39,12 @@ object Users : Table("directory") {
     val name = varchar("name", 20) // Column<String>
     val user_type = varchar("user_Type",6)
 }
-
-
+@Serializable
+data class geopos(val lat: Float,val long: Float)
 @Serializable
 data class busstposCorrestion(val first:List<String>,)
 @Serializable
-data class  BusStopM(val id: String = "",val name:String = "",val lat :Float = 0F,val long:Float =0F)
+data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos)
 
 
 @Serializable
@@ -56,7 +56,7 @@ data class UserM(val id : String = "", val name : String = "", val User_type:Str
 
 
 @Serializable
-data class MarshrutM(val id: String = "", val idm_Foreign: String = "", val idOst:List<BusStopM>  )
+data class MarshrutM(val id: String = "", val idm_Foreign: String = "", val idOst:List<BusStopM> ,val lineMarshtriectori :List<geopos> )
 
 
 fun Application.configureRouting() {
@@ -135,12 +135,17 @@ fun Application.configureRouting() {
 
                 var list = li.flatten().distinct()
                 var lis = mutableListOf<List<BusStopM>>()
-
+                var listGeoPosFalse = mutableListOf<List<geopos>>()
                 val busstops = busStop.selectAll()
                 for(i in list){
-                    lis.add(busStop.select(busStop.id eq i).map { BusStopM(it[busStop.id], it[busStop.name],it[busStop.lat],it[busStop.lng]) })
+                    lis.add(busStop.select(busStop.id eq i).map { BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng])) })
 
                 }
+                for(i in list){
+                    listGeoPosFalse.add(busStop.select(busStop.id eq i).map { geopos(it[busStop.lat],it[busStop.lng]) })
+
+                }
+                var listGeoPosTrue = listGeoPosFalse.flatten()
                 var listof = lis.flatten()
 
 
@@ -152,7 +157,7 @@ fun Application.configureRouting() {
 
 
 //(BusStopM(it[busStop.name]))
-                marshruts.select(marshruts.idm eq res).map{ (MarshrutM(it[marshruts.id],marshname,listof)) }.first()
+                marshruts.select(marshruts.idm eq res).map{ (MarshrutM(it[marshruts.id],marshname,listof,listGeoPosTrue)) }.first()
 
 
             }
