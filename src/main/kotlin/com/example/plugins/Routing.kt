@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
+import org.jetbrains.exposed.sql.javatime.time
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
@@ -22,6 +23,7 @@ object  busStop :Table("busstop"){
     val lng = float("long")
 }
 
+
 object marshruts :Table("marsruts"){
     val id = varchar("id",20)
     val idm = varchar("idm",20)
@@ -29,12 +31,11 @@ object marshruts :Table("marsruts"){
     val idostplus = varchar("idostplus",20)
 
 }
-object marshNames :Table("marsrutnames"){
+object marshNames :Table("table_name"){
     val id = varchar("id",20)
-    val name = varchar("namemarsrut",30)
+    val name = varchar("name",30)
 }
 object Users : Table("directory") {
-
     val idnum = varchar("idNum",20) // Column<String>
     val name = varchar("name", 20) // Column<String>
     val user_type = varchar("user_Type",6)
@@ -101,15 +102,15 @@ fun Application.configureRouting() {
             }
             call.respondText(Json.encodeToString<List<MarshNamesM>>(a), ContentType.Application.Json)
         }
-        get("/OneMarshName/{id}"){
-            val res = call.parameters["id"]?.toInt() ?: 0
-            val a = transaction {
-                val t = marshNames.select(){
-                    marshNames.id eq res.toString()
-                }.find{it[marshNames.id] == res.toString()}
-            }
-
-        }
+//        get("/OneMarshName/{id}"){
+//            val res = call.parameters["id"]?.toInt() ?: 0
+//            val a = transaction {
+//                val t = marshNames.select(){
+//                    marshNames.id eq res.toString()
+//                }.find{it[marshNames.id] == res.toString()}
+//            }
+//
+//        }
 
 
 
@@ -127,6 +128,7 @@ fun Application.configureRouting() {
             val li = mutableListOf<List<String>>()
             val a = transaction {
                 val marshname = marshNames.select(marshNames.id eq res).map{it[marshNames.name]}.first()
+                val marshid = marshNames.select(marshNames.name eq marshname).map{it[marshNames.id]}.first()
                 //   val busGetFirst = marshruts.select(marshruts.idm eq res).map{(MarshrutM(it[marshruts.idost]))}.first()
 //                busStop.select(busStop.id eq busGetFirst.toString()).map { list.add(busGetFirst) }
 //            t?.get(Users.idnum)?.let{it2 -> UserM(it2,t[Users.name],t[Users.user_type])}
@@ -145,6 +147,8 @@ fun Application.configureRouting() {
                     listGeoPosFalse.add(busStop.select(busStop.id eq i).map { geopos(it[busStop.lat],it[busStop.lng]) })
 
                 }
+
+
                 var listGeoPosTrue = listGeoPosFalse.flatten()
                 var listof = lis.flatten()
 
@@ -157,7 +161,7 @@ fun Application.configureRouting() {
 
 
 //(BusStopM(it[busStop.name]))
-                marshruts.select(marshruts.idm eq res).map{ (MarshrutM(it[marshruts.id],marshname,listof,listGeoPosTrue)) }.first()
+                marshruts.select(marshruts.idm eq res).map{ (MarshrutM(marshid,marshname,listof,listGeoPosTrue)) }.first()
 
 
             }
