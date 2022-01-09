@@ -16,6 +16,11 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 import java.sql.Time
+object traictori:Table("traiktoria_marshruta"){
+    val idm = varchar("id_marsh", 50)
+    val lat = float("lat")
+    val long = float("long")
+}
 object  busStop :Table("busstop"){
     val id = varchar("id",20)
     val name = varchar("name",30)
@@ -45,10 +50,11 @@ data class geopos(val lat: Float,val long: Float)
 @Serializable
 data class busstposCorrestion(val id :String ="",val first:List<String>,)
 @Serializable
-data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos)
+data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos, val timerr :List<MarshMTime> )
 @Serializable
-data class BusStopMplusClock(val first:BusStopM,val second:MarshMTime)
-
+data class bustoptimewith(val first :List<BusStopM>,val second:List<MarshMTime>)
+@Serializable
+data class traictoria(val idm:String = "",val geopos:geopos)
 @Serializable
 data class  MarshNamesM(val id: String = "",val name:String = "")
 
@@ -58,24 +64,14 @@ data class UserM(val id : String = "", val name : String = "", val User_type:Str
 
 
 @Serializable
-data class MarshrutM(val id: String = "", val idm_Foreign: String = "", val idOst:List<BusStopMplusClock> ,val lineMarshtriectori :List<geopos> , val clock:String = "")
+data class MarshrutM(val id: String = "", val idm_Foreign: String = "", val idOst:List<BusStopM> ,val lineMarshtriectori :List<geopos> , val clock:String = "")
 @Serializable
 data class MarshMTime(val id : String = "",val clock:String = "")
 
 fun Application.configureRouting() {
 
     routing {
-        get("/{id}") {
-            var ids = call.parameters["id"]?.toInt() ?: 0
 
-            val a = transaction {
-                Users.selectAll().map {
-                    (UserM(it[Users.idnum], it[Users.name],it[Users.user_type]))
-
-                }
-            }
-            call.respondText(Json.encodeToString<UserM>(a[ids]), ContentType.Application.Json)
-        }
 
         get("/sign/{id_sign}") {
             val sigin_id = call.parameters["id_sign"]
@@ -104,15 +100,7 @@ fun Application.configureRouting() {
             }
             call.respondText(Json.encodeToString<List<MarshNamesM>>(a), ContentType.Application.Json)
         }
-//        get("/OneMarshName/{id}"){
-//            val res = call.parameters["id"]?.toInt() ?: 0
-//            val a = transaction {
-//                val t = marshNames.select(){
-//                    marshNames.id eq res.toString()
-//                }.find{it[marshNames.id] == res.toString()}
-//            }
-//
-//        }
+
 
 
 
@@ -137,26 +125,31 @@ fun Application.configureRouting() {
                 l.forEach { li.add(it.first)}
 
                 var list = li.flatten().distinct()
-                var lis = mutableListOf<BusStopMplusClock>()
+                var lis = mutableListOf<BusStopM>()
+
                 var listGeoPosFalse = mutableListOf<List<geopos>>()
 
-print(list)
-                for(i in list){
-                   var fir = busStop.select(busStop.id eq i).map {BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng])) }.first()
-                   var sec = marshruts.select(marshruts.idm eq res).map { MarshMTime(clock = it[marshruts.clock]) }.first()
-print(sec)
-                    print(fir)
-                   lis.add(BusStopMplusClock(fir,sec))
-                }
 
                 for(i in list){
-                    listGeoPosFalse.add(busStop.select(busStop.id eq i).map { geopos(it[busStop.lat],it[busStop.lng]) })
+                    var sec = marshruts.select(marshruts.idm.eq(res) and marshruts.idost.eq(i)).map { MarshMTime(clock = it[marshruts.clock]) }
 
-                }
+
+                    lis.add(busStop.select(busStop.id eq i).map {BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng]),sec) }.first())
+            }
+
+
+
+
+
+
+
+
+                    listGeoPosFalse.add(traictori.select(traictori.idm eq res).map { geopos(it[traictori.lat],it[traictori.long]) })
+
+
 
 
                 var listGeoPosTrue = listGeoPosFalse.flatten()
-                var listof = lis
 
 
 
@@ -167,7 +160,8 @@ print(sec)
 
 
 
-                marshruts.select(marshruts.idm eq res).map{ (MarshrutM(marshid,marshname,listof,listGeoPosTrue)) }.first()
+
+                marshruts.select(marshruts.idm eq res).map{ (MarshrutM(marshid,marshname,lis,listGeoPosTrue)) }.first()
 
 
             }
