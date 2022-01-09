@@ -50,9 +50,9 @@ data class geopos(val lat: Float,val long: Float)
 @Serializable
 data class busstposCorrestion(val id :String ="",val first:List<String>,)
 @Serializable
-data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos, val timerr :String )
+data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos)
 @Serializable
-data class bustoptimewith(val first :List<BusStopM>,val second:List<MarshMTime>)
+data class bustoptimewith(val first :BusStopM,val second:String="")
 @Serializable
 data class traictoria(val idm:String = "",val geopos:geopos)
 @Serializable
@@ -64,7 +64,7 @@ data class UserM(val id : String = "", val name : String = "", val User_type:Str
 
 
 @Serializable
-data class MarshrutM(val id: String = "", val idm_Foreign: String = "", val idOst:List<BusStopM> ,val lineMarshtriectori :List<geopos> , val clock:String = "")
+data class MarshrutM(val id: String = "", val idm_Foreign: String = "", val idOst:List<bustoptimewith> ,val lineMarshtriectori :List<geopos> , val clock:String = "")
 @Serializable
 data class MarshMTime(val id : String = "",val clock:String = "")
 
@@ -125,16 +125,16 @@ fun Application.configureRouting() {
                 l.forEach { li.add(it.first)}
 
                 var list = li.flatten().distinct()
-                var lis = mutableListOf<BusStopM>()
+                var lis = mutableListOf<bustoptimewith>()
 
                 var listGeoPosFalse = mutableListOf<List<geopos>>()
 
 
                 for(i in list){
-                    var sec = marshruts.select(marshruts.idm.eq(res) and marshruts.idost.eq(i)).map { MarshMTime(clock = it[marshruts.clock]) }
+                   var secBuffer = marshruts.select(marshruts.idm.eq(res) and marshruts.idost.eq(i)).map { MarshMTime(clock = it[marshruts.clock]) }.first().clock
 
 
-                    lis.add(busStop.select(busStop.id eq i).map {BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng]),sec.first().clock) }.first())
+                    lis.add(busStop.select(busStop.id eq i).map {bustoptimewith(BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng])),secBuffer) }.first())
             }
 
 
