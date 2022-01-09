@@ -50,7 +50,7 @@ data class geopos(val lat: Float,val long: Float)
 @Serializable
 data class busstposCorrestion(val id :String ="",val first:List<String>,)
 @Serializable
-data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos, val timerr :List<MarshMTime> )
+data class  BusStopM(val id: String = "",val name:String = "",val geopos :geopos, val timerr :String )
 @Serializable
 data class bustoptimewith(val first :List<BusStopM>,val second:List<MarshMTime>)
 @Serializable
@@ -134,7 +134,7 @@ fun Application.configureRouting() {
                     var sec = marshruts.select(marshruts.idm.eq(res) and marshruts.idost.eq(i)).map { MarshMTime(clock = it[marshruts.clock]) }
 
 
-                    lis.add(busStop.select(busStop.id eq i).map {BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng]),sec) }.first())
+                    lis.add(busStop.select(busStop.id eq i).map {BusStopM(it[busStop.id], it[busStop.name],geopos(it[busStop.lat],it[busStop.lng]),sec.first().clock) }.first())
             }
 
 
