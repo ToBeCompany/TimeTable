@@ -17,36 +17,36 @@ import org.joda.time.DateTime
 
 import java.sql.Time
 object traictori:Table("traiktoria_marshruta"){
-    val idm = varchar("id_marsh", 50)
-    val lat = float("lat")
-    val long = float("long")
+    val idm = varchar("id_marsh", 100)
+    val lat = double("lat")
+    val long = double("long")
 }
 object  busStop :Table("busstop"){
-    val id = varchar("id",20)
-    val name = varchar("name",30)
-    val lat = float("lat")
-    val lng = float("long")
+    val id = varchar("id",100)
+    val name = varchar("name",100)
+    val lat = double("lat")
+    val lng = double("long")
 }
 
 
 object marshruts :Table("marsruts"){
-    val id = varchar("id",20)
-    val idm = varchar("idm",20)
-    val idost = varchar("idost",20)
-    val idostplus = varchar("idostplus",20)
-    val clock = varchar("timer",10)
+    val id = varchar("id",100)
+    val idm = varchar("idm",100)
+    val idost = varchar("idost",100)
+    val idostplus = varchar("idostplus",100)
+    val clock = varchar("timer",100)
 }
 object marshNames :Table("table_name"){
-    val id = varchar("id",20)
-    val name = varchar("name",30)
+    val id = varchar("id",100)
+    val name = varchar("name",100)
 }
 object Users : Table("directory") {
-    val idnum = varchar("idNum",20) // Column<String>
-    val name = varchar("name", 20) // Column<String>
+    val idnum = varchar("idNum",100) // Column<String>
+    val name = varchar("name", 100) // Column<String>
     val user_type = varchar("user_Type",6)
 }
 @Serializable
-data class geopos(val lat: Float,val long: Float)
+data class geopos(val lat: Double,val long:Double)
 @Serializable
 data class busstposCorrestion(val id :String ="",val first:List<String>,)
 @Serializable
