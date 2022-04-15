@@ -18,21 +18,26 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
 
 fun main() {
-    val port = 8888//Integer.parseInt(System.getenv("PORT"))
+    val port = 8008//Integer.parseInt(System.getenv("PORT"))
+//    Database.connect(
+//        "jdbc:postgresql://ec2-54-204-128-96.compute-1.amazonaws.com:5432/d43qcb6atqt206?sslmode=require",
+//        driver = "org.postgresql.Driver",
+//        user = "zpikpxknmoscgo",
+//        password ="7d2459c6a2a75d029f3ecaf7b4564bbf0114f96083a4e504886771cb212c344f"
+//    )
+
     Database.connect(
-        "jdbc:postgresql://ec2-54-204-128-96.compute-1.amazonaws.com:5432/d43qcb6atqt206?sslmode=require",
+        "jdbc:postgresql://localhost:5432/timetablee",
         driver = "org.postgresql.Driver",
-        user = "zpikpxknmoscgo",
-        password ="7d2459c6a2a75d029f3ecaf7b4564bbf0114f96083a4e504886771cb212c344f"
+        user = "postgres",
+        password = "password"
     )
 
     embeddedServer(Netty, port = port) {
-install(ContentNegotiation) {
-    json()
-
-}
+        install(ContentNegotiation) {
+            json()
+        }
         configureRouting()
-
         configureSerialization()
         configureSockets()
     }.start(wait = true)
